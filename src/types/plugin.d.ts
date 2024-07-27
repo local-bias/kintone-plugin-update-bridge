@@ -12,9 +12,17 @@ declare namespace Plugin {
     version: 1;
     conditions: {
       id: string;
-      memo: string;
-      fields: string[];
-      isSampleUIShown: boolean;
+      dstAppId: string;
+      dstSpaceId: string | null;
+      isDstAppGuestSpace: boolean;
+      srcKeyFieldCode: string;
+      dstKeyFieldCode: string;
+      bindings: {
+        srcFieldCode: string;
+        dstFieldCode: string;
+      }[];
+      srcQuery: string;
+      dstQuery: string;
     }[];
   };
 }

@@ -1,6 +1,7 @@
 import { DefaultValue, RecoilState, atom, selector, selectorFamily } from 'recoil';
-import { getUpdatedStorage, restorePluginConfig } from '@/lib/plugin';
+import { restorePluginConfig } from '@/lib/plugin';
 import { nanoid } from 'nanoid';
+import { produce } from 'immer';
 
 const PREFIX = 'plugin';
 
@@ -33,6 +34,22 @@ export const selectedConditionState = selector<Plugin.Condition>({
     return (
       storage.conditions.find((condition) => condition.id === selectedConditionId) ??
       storage.conditions[0]
+    );
+  },
+  set: ({ set }, newValue) => {
+    if (newValue instanceof DefaultValue) {
+      return;
+    }
+    set(storageState, (current) =>
+      produce(current, (draft) => {
+        const conditionIndex = draft.conditions.findIndex(
+          (condition) => condition.id === newValue.id
+        );
+        if (conditionIndex === -1) {
+          return;
+        }
+        draft.conditions[conditionIndex] = newValue;
+      })
     );
   },
 });
@@ -71,21 +88,18 @@ const conditionPropertyState = selectorFamily<
     },
   set:
     (key) =>
-    ({ get, set }, newValue) => {
-      const conditionId = get(selectedConditionState).id;
-      set(storageState, (current) => {
-        if (newValue instanceof DefaultValue) {
-          return current;
-        }
-        const conditionIndex = current.conditions.findIndex(
-          (condition) => condition.id === conditionId
-        );
-        return getUpdatedStorage(current, { conditionIndex, key, value: newValue });
-      });
+    ({ set }, newValue) => {
+      if (newValue instanceof DefaultValue) {
+        return;
+      }
+      set(selectedConditionState, (current) =>
+        produce(current, (draft) => {
+          // @ts-expect-error
+          draft[key] = newValue;
+        })
+      );
     },
 });
 
 export const getConditionPropertyState = <T extends keyof Plugin.Condition>(property: T) =>
   conditionPropertyState(property) as unknown as RecoilState<Plugin.Condition[T]>;
-
-export const fieldsState = getConditionPropertyState('fields');

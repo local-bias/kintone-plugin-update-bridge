@@ -7,16 +7,25 @@ import {
   RecoilText,
   RecoilSwitch,
 } from '@konomi-app/kintone-utilities-react';
-import FieldsForm from './form-fields';
 import DeleteButton from './condition-delete-button';
 import { getConditionPropertyState } from '@/config/states/plugin';
 import { t } from '@/lib/i18n';
+import FormDstApp from './form-dst-app';
 
 const Component: FC = () => (
   <div className='p-4'>
     <PluginFormSection>
-      <PluginFormTitle>{t('config.condition.memo.title')}</PluginFormTitle>
-      <PluginFormDescription last>{t('config.condition.memo.description')}</PluginFormDescription>
+      <PluginFormTitle>{t('config.condition.dstAppId.title')}</PluginFormTitle>
+      <PluginFormDescription last>
+        {t('config.condition.dstAppId.description')}
+      </PluginFormDescription>
+      <FormDstApp />
+    </PluginFormSection>
+    <PluginFormSection>
+      <PluginFormTitle>{t('config.condition.keyFieldCode.title')}</PluginFormTitle>
+      <PluginFormDescription last>
+        {t('config.condition.keyFieldCode.description')}
+      </PluginFormDescription>
       <RecoilText
         state={getConditionPropertyState('memo')}
         label={t('config.condition.memo.label')}
@@ -24,9 +33,10 @@ const Component: FC = () => (
       />
     </PluginFormSection>
     <PluginFormSection>
-      <PluginFormTitle>{t('config.condition.field.title')}</PluginFormTitle>
-      <PluginFormDescription last>{t('config.condition.field.description')}</PluginFormDescription>
-      <FieldsForm />
+      <PluginFormTitle>{t('config.condition.bindings.title')}</PluginFormTitle>
+      <PluginFormDescription last>
+        {t('config.condition.bindings.description')}
+      </PluginFormDescription>
     </PluginFormSection>
     <PluginFormSection>
       <PluginFormTitle>{t('config.condition.isSampleUIShown.title')}</PluginFormTitle>

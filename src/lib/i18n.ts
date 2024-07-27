@@ -6,18 +6,37 @@ export const ui = {
   ja: {
     'error.config.root':
       'プラグインのHTMLに、ルート要素が存在しません。プラグイン設定をレンダリングするためには、id="settings"の要素が必要です。',
-    'config.condition.memo.title': 'メモ',
-    'config.condition.memo.description':
+
+    'config.condition.dstAppId.title': '更新するアプリ',
+    'config.condition.dstAppId.description':
+      'このアプリのレコードを更新したタイミングで、合わせて更新するアプリを選択してください',
+    'config.condition.dstAppId.label': 'アプリ名(アプリID)',
+    'config.condition.dstAppId.placeholder': 'アプリを選択',
+
+    'config.condition.keyFieldCode.title': '更新のキーとなるフィールド',
+    'config.condition.keyFieldCode.description':
+      '更新した際に、このフィールドの値をキーとして、更新対象のレコードを特定します',
+    'config.condition.keyFieldCode.label': 'フィールド名(フィールドコード)',
+    'config.condition.keyFieldCode.placeholder': 'フィールドを選択',
+
+    'config.condition.bindings.title': '紐づけ設定',
+    'config.condition.bindings.description':
+      'キーが一致したレコードの、更新を行うフィールドを設定します',
+    'config.condition.bindings.label': '📝 メモ',
+    'config.condition.bindings.placeholder': 'テキストを入力',
+
+    'config.condition.srcQuery.title': 'メモ',
+    'config.condition.srcQuery.description':
       'この設定はサンプルです。プラグインにテキスト情報を保存することができます。',
-    'config.condition.memo.label': '📝 メモ',
-    'config.condition.memo.placeholder': 'テキストを入力',
-    'config.condition.field.title': '対象フィールド',
-    'config.condition.field.description':
-      'この設定はサンプルです。このアプリの設定情報から、フィールド一覧を取得して表示しています。',
-    'config.condition.isSampleUIShown.title': 'スイッチのサンプル',
-    'config.condition.isSampleUIShown.description':
-      '有効・無効などを切り替えるスイッチのサンプルです。ここでは、レコード一覧にサンプルのUIを表示するかどうかを切り替えています。',
-    'config.condition.isSampleUIShown.label': 'サンプルUIを表示',
+    'config.condition.srcQuery.label': '📝 メモ',
+    'config.condition.srcQuery.placeholder': 'テキストを入力',
+
+    'config.condition.dstQuery.title': 'メモ',
+    'config.condition.dstQuery.description':
+      'この設定はサンプルです。プラグインにテキスト情報を保存することができます。',
+    'config.condition.dstQuery.label': '📝 メモ',
+    'config.condition.dstQuery.placeholder': 'テキストを入力',
+
     'config.sidebar.tab.label': '設定',
     'config.button.save': '設定を保存',
     'config.button.return': 'プラグイン一覧へ戻る',

@@ -1,14 +1,14 @@
 // @ts-check
 const hp = 'https://konomi.app';
 const cdn = 'https://kintone-plugin.konomi.app';
-const key = 'template';
+const key = 'update-bridge';
 
 /** @satisfies { Plugin.Meta.Config } */
 export default /** @type { const } */ ({
   id: `ribbit-kintone-plugin-${key}`,
   pluginReleasePageUrl: `https://ribbit.konomi.app/kintone-plugin/`,
   server: {
-    port: 65535,
+    port: 26553,
   },
   lint: {
     build: true,
@@ -23,17 +23,17 @@ export default /** @type { const } */ ({
   manifest: {
     base: {
       manifest_version: 1,
-      version: '2.0.1',
+      version: '1.0.0',
       type: 'APP',
       name: {
-        en: 'kintone-plugin-template',
-        ja: 'プラグインテンプレート',
-        zh: '插件模板',
+        en: 'Update Other App Plugin',
+        ja: '他アプリ更新プラグイン',
+        zh: '更新其他应用程序插件',
       },
       description: {
-        en: 'kintone-plugin-template',
-        ja: 'プラグインの説明をここに記載します',
-        zh: '插件模板',
+        en: 'When a record in the app is updated, it updates the records of other related apps.',
+        ja: 'アプリのレコードが更新された際に、関連する他アプリのレコードを更新します',
+        zh: '当应用程序中的记录更新时，它会更新其他相关应用程序的记录。',
       },
       icon: 'icon.png',
       homepage_url: { ja: hp, en: hp },

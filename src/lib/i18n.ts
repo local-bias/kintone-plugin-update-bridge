@@ -16,26 +16,23 @@ export const ui = {
     'config.condition.keyFieldCode.title': '更新のキーとなるフィールド',
     'config.condition.keyFieldCode.description':
       '更新した際に、このフィールドの値をキーとして、更新対象のレコードを特定します',
-    'config.condition.keyFieldCode.label': 'フィールド名(フィールドコード)',
-    'config.condition.keyFieldCode.placeholder': 'フィールドを選択',
+    'config.condition.keyFieldCode.src.label': 'このアプリのキーフィールド',
+    'config.condition.keyFieldCode.dst.label': '更新先アプリのキーフィールド',
 
     'config.condition.bindings.title': '紐づけ設定',
     'config.condition.bindings.description':
       'キーが一致したレコードの、更新を行うフィールドを設定します',
-    'config.condition.bindings.label': '📝 メモ',
-    'config.condition.bindings.placeholder': 'テキストを入力',
 
-    'config.condition.srcQuery.title': 'メモ',
+    'config.condition.srcQuery.title': '更新元のクエリ',
     'config.condition.srcQuery.description':
-      'この設定はサンプルです。プラグインにテキスト情報を保存することができます。',
-    'config.condition.srcQuery.label': '📝 メモ',
-    'config.condition.srcQuery.placeholder': 'テキストを入力',
+      '指定したクエリに一致するレコードが更新された場合のみ、更新を行います',
+    'config.condition.srcQuery.label': 'クエリ',
+    'config.condition.srcQuery.placeholder': '[フィールド名] = "値"',
 
-    'config.condition.dstQuery.title': 'メモ',
-    'config.condition.dstQuery.description':
-      'この設定はサンプルです。プラグインにテキスト情報を保存することができます。',
-    'config.condition.dstQuery.label': '📝 メモ',
-    'config.condition.dstQuery.placeholder': 'テキストを入力',
+    'config.condition.dstQuery.title': '更新先のクエリ',
+    'config.condition.dstQuery.description': '指定したクエリに一致するレコードのみ、更新を行います',
+    'config.condition.dstQuery.label': 'クエリ',
+    'config.condition.dstQuery.placeholder': '[フィールド名] = "値"',
 
     'config.sidebar.tab.label': '設定',
     'config.button.save': '設定を保存',
@@ -160,7 +157,8 @@ export const defaultLang = 'ja' satisfies Language;
  */
 export function useTranslations(lang: keyof typeof ui) {
   return function t(key: keyof (typeof ui)[typeof defaultLang]): string {
-    // //@ts-expect-error - デフォルト言語以外の設定が不十分な場合は、デフォルト言語の設定を使用します
+    /* eslint @typescript-eslint/ban-ts-comment: 0 */
+    // @ts-ignore デフォルト言語以外の設定が不十分な場合は、デフォルト言語の設定を使用します
     return ui[lang][key] ?? ui[defaultLang][key];
   };
 }

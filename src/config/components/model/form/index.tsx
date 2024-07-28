@@ -11,6 +11,7 @@ import DeleteButton from './condition-delete-button';
 import { getConditionPropertyState } from '@/config/states/plugin';
 import { t } from '@/lib/i18n';
 import FormDstApp from './form-dst-app';
+import FormKeyFieldCode from './form-key-field-code';
 
 const Component: FC = () => (
   <div className='p-4'>
@@ -26,11 +27,7 @@ const Component: FC = () => (
       <PluginFormDescription last>
         {t('config.condition.keyFieldCode.description')}
       </PluginFormDescription>
-      <RecoilText
-        state={getConditionPropertyState('memo')}
-        label={t('config.condition.memo.label')}
-        placeholder={t('config.condition.memo.placeholder')}
-      />
+      <FormKeyFieldCode />
     </PluginFormSection>
     <PluginFormSection>
       <PluginFormTitle>{t('config.condition.bindings.title')}</PluginFormTitle>
@@ -39,13 +36,27 @@ const Component: FC = () => (
       </PluginFormDescription>
     </PluginFormSection>
     <PluginFormSection>
-      <PluginFormTitle>{t('config.condition.isSampleUIShown.title')}</PluginFormTitle>
+      <PluginFormTitle>{t('config.condition.srcQuery.title')}</PluginFormTitle>
       <PluginFormDescription last>
-        {t('config.condition.isSampleUIShown.description')}
+        {t('config.condition.srcQuery.description')}
       </PluginFormDescription>
-      <RecoilSwitch
-        state={getConditionPropertyState('isSampleUIShown')}
-        label={t('config.condition.isSampleUIShown.label')}
+      <RecoilText
+        state={getConditionPropertyState('srcQuery')}
+        label={t('config.condition.srcQuery.label')}
+        placeholder={t('config.condition.srcQuery.placeholder')}
+        width={600}
+      />
+    </PluginFormSection>
+    <PluginFormSection>
+      <PluginFormTitle>{t('config.condition.dstQuery.title')}</PluginFormTitle>
+      <PluginFormDescription last>
+        {t('config.condition.dstQuery.description')}
+      </PluginFormDescription>
+      <RecoilText
+        state={getConditionPropertyState('dstQuery')}
+        label={t('config.condition.dstQuery.label')}
+        placeholder={t('config.condition.dstQuery.placeholder')}
+        width={600}
       />
     </PluginFormSection>
     <DeleteButton />

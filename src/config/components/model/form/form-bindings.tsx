@@ -1,4 +1,5 @@
-import React, { FC, memo } from 'react';
+import { Skeleton } from '@mui/material';
+import React, { FC, memo, Suspense } from 'react';
 import { useRecoilCallback, useRecoilValue } from 'recoil';
 import { appFieldsState, dstAppFieldsState } from '../../../states/kintone';
 import { getConditionPropertyState } from '@/config/states/plugin';

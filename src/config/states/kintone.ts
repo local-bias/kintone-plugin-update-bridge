@@ -6,8 +6,9 @@ import {
   withSpaceIdFallback,
   getSpace,
 } from '@konomi-app/kintone-utilities';
-import { selector, selectorFamily } from 'recoil';
+import { selector } from 'recoil';
 import { GUEST_SPACE_ID } from '@/lib/global';
+import { getConditionPropertyState } from './plugin';
 
 const PREFIX = 'kintone';
 
@@ -61,24 +62,27 @@ export const appFieldsState = selector<kintoneAPI.FieldProperty[]>({
   },
 });
 
-export const dstAppPropertiesState = selectorFamily<kintoneAPI.FieldProperty[], string>({
-  key: `${PREFIX}dstAppPropertiesState`,
-  get:
-    (app) =>
-    async ({ get }) => {
-      if (!app) {
-        throw new Error('アプリのフィールド情報が取得できませんでした');
-      }
+export const dstAppFieldsState = selector<kintoneAPI.FieldProperty[]>({
+  key: `${PREFIX}dstAppFieldsState`,
+  get: async ({ get }) => {
+    const app = get(getConditionPropertyState('dstAppId'));
+    if (!app) {
+      return [];
+    }
+    const spaceId = get(getConditionPropertyState('dstSpaceId'));
+    const isGuestSpace = get(getConditionPropertyState('isDstAppGuestSpace'));
 
-      const { properties } = await getFormFields({
-        app,
-        preview: true,
-        guestSpaceId: GUEST_SPACE_ID,
-        debug: process?.env?.NODE_ENV === 'development',
-      });
+    const guestSpaceId = GUEST_SPACE_ID ?? (isGuestSpace ? (spaceId ?? undefined) : undefined);
 
-      return Object.values(properties).sort((a, b) => a.label.localeCompare(b.label, 'ja'));
-    },
+    const { properties } = await getFormFields({
+      app,
+      preview: true,
+      guestSpaceId,
+      debug: process?.env?.NODE_ENV === 'development',
+    });
+
+    return Object.values(properties).sort((a, b) => a.label.localeCompare(b.label, 'ja'));
+  },
 });
 
 export const flatFieldsState = selector<kintoneAPI.FieldProperty[]>({

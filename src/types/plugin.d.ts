@@ -1,6 +1,7 @@
 declare namespace Plugin {
   /** 🔌 プラグインがアプリ単位で保存する設定情報 */
   type Config = ConfigV1;
+  type Binding = Config['conditions'][number]['bindings'][number];
 
   /** 🔌 プラグインの詳細設定 */
   type Condition = Config['conditions'][number];
@@ -18,6 +19,7 @@ declare namespace Plugin {
       srcKeyFieldCode: string;
       dstKeyFieldCode: string;
       bindings: {
+        id: string;
         srcFieldCode: string;
         dstFieldCode: string;
       }[];

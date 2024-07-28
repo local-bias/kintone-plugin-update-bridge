@@ -3,11 +3,22 @@ import { produce } from 'immer';
 import { PLUGIN_ID } from './global';
 import { nanoid } from 'nanoid';
 
+export const getNewBinding = (): Plugin.Binding => ({
+  id: nanoid(),
+  srcFieldCode: '',
+  dstFieldCode: '',
+});
+
 export const getNewCondition = (): Plugin.Condition => ({
   id: nanoid(),
-  memo: '',
-  fields: [''],
-  isSampleUIShown: true,
+  dstAppId: '',
+  dstSpaceId: null,
+  isDstAppGuestSpace: false,
+  srcKeyFieldCode: '',
+  dstKeyFieldCode: '',
+  bindings: [getNewBinding()],
+  srcQuery: '',
+  dstQuery: '',
 });
 
 /**

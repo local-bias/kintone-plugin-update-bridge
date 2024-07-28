@@ -12,6 +12,7 @@ import { getConditionPropertyState } from '@/config/states/plugin';
 import { t } from '@/lib/i18n';
 import FormDstApp from './form-dst-app';
 import FormKeyFieldCode from './form-key-field-code';
+import FormBindings from './form-bindings';
 
 const Component: FC = () => (
   <div className='p-4'>
@@ -34,6 +35,7 @@ const Component: FC = () => (
       <PluginFormDescription last>
         {t('config.condition.bindings.description')}
       </PluginFormDescription>
+      <FormBindings />
     </PluginFormSection>
     <PluginFormSection>
       <PluginFormTitle>{t('config.condition.srcQuery.title')}</PluginFormTitle>

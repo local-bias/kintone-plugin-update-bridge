@@ -34,7 +34,8 @@ export const ui = {
     'config.condition.srcQuery.placeholder': '[フィールド名] = "値"',
 
     'config.condition.dstQuery.title': '更新先のクエリ',
-    'config.condition.dstQuery.description': '指定したクエリに一致するレコードのみ、更新を行います',
+    'config.condition.dstQuery.description':
+      '更新のキーに加えて、指定したクエリに一致するレコードのみ、更新を行います',
     'config.condition.dstQuery.label': 'クエリ',
     'config.condition.dstQuery.placeholder': '[フィールド名] = "値"',
 

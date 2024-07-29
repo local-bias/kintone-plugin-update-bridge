@@ -10,6 +10,7 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 import { useTab } from './use-tab';
 import styled from '@emotion/styled';
+import { kintoneAppsState } from '@/config/states/kintone';
 
 const SidebarTab: FC<{ condition: Plugin.Condition; index: number }> = ({ condition, index }) => {
   const {
@@ -23,11 +24,14 @@ const SidebarTab: FC<{ condition: Plugin.Condition; index: number }> = ({ condit
   } = useSortable({ id: condition.id });
   const { onTabChange } = useTab();
   const selectedId = useRecoilValue(selectedConditionIdState);
+  const allApps = useRecoilValue(kintoneAppsState);
+
+  const targetApp = allApps.find((app) => app.appId === condition.dstAppId);
 
   const onClick = () => onTabChange(condition);
 
-  const label = condition.memo ? (
-    <>{`${t('config.sidebar.tab.label')}${index + 1}(${condition.memo})`}</>
+  const label = targetApp ? (
+    <>{`${t('config.sidebar.tab.label')}${index + 1}(${targetApp.name})`}</>
   ) : (
     <>{`${t('config.sidebar.tab.label')}${index + 1}`}</>
   );

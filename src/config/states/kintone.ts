@@ -12,6 +12,14 @@ import { getConditionPropertyState } from './plugin';
 
 const PREFIX = 'kintone';
 
+const DISALLOWED_FIELD_TYPES: kintoneAPI.FieldPropertyType[] = [
+  'SUBTABLE',
+  'GROUP',
+  'CATEGORY',
+  'REFERENCE_TABLE',
+  'FILE',
+];
+
 export const kintoneAppsState = selector({
   key: `${PREFIX}kintoneAppsState`,
   get: async ({ get }) => {
@@ -56,7 +64,9 @@ export const appFieldsState = selector<kintoneAPI.FieldProperty[]>({
       debug: process.env.NODE_ENV === 'development',
     });
 
-    const values = Object.values(properties);
+    const values = Object.values(properties).filter(
+      (field) => !DISALLOWED_FIELD_TYPES.includes(field.type)
+    );
 
     return values.sort((a, b) => a.label.localeCompare(b.label, 'ja'));
   },
@@ -81,7 +91,11 @@ export const dstAppFieldsState = selector<kintoneAPI.FieldProperty[]>({
       debug: process?.env?.NODE_ENV === 'development',
     });
 
-    return Object.values(properties).sort((a, b) => a.label.localeCompare(b.label, 'ja'));
+    const values = Object.values(properties).filter(
+      (field) => !DISALLOWED_FIELD_TYPES.includes(field.type)
+    );
+
+    return values.sort((a, b) => a.label.localeCompare(b.label, 'ja'));
   },
 });
 

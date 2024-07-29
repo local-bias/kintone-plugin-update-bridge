@@ -1,69 +1,125 @@
-import { ThemeProvider } from '@/lib/components/theme-provider';
 import { manager } from '@/lib/event-manager';
-import { t } from '@/lib/i18n';
 import { restorePluginConfig } from '@/lib/plugin';
-import { PLUGIN_NAME } from '@/lib/static';
-import { Alert, AlertTitle, Dialog, DialogContent, DialogTitle } from '@mui/material';
-import { Rocket } from 'lucide-react';
-import config from 'plugin.config.mjs';
-import React, { FC, useState } from 'react';
-import { Root, createRoot } from 'react-dom/client';
+import {
+  getAllRecords,
+  getAppId,
+  getFormFields,
+  getRecords,
+  kintoneAPI,
+  updateAllRecords,
+  UpdateAllRecordsParams,
+} from '@konomi-app/kintone-utilities';
+import { convertFieldValue, getDynamicDstQuery } from './actions';
+import { loadingOverlay } from '@/lib/loading';
+import { GUEST_SPACE_ID } from '@/lib/global';
 
-const ROOT_ID = `🐸${config.id}-root`;
+const events: kintoneAPI.js.EventType[] = [
+  'app.record.create.submit.success',
+  'app.record.edit.submit.success',
+  'app.record.index.edit.submit.success',
+];
 
-let cachedRoot: Root | null = null;
+manager.add(events, async (event) => {
+  try {
+    loadingOverlay.label = `紐づく他のアプリを更新しています`;
+    loadingOverlay.show();
+    const config = restorePluginConfig();
 
-const Component: FC<{ pluginConfig: Plugin.Config }> = ({ pluginConfig }) => {
-  const [open, setOpen] = useState(false);
+    const currentRecord = event.record;
+    const currentRecordId = currentRecord.$id.value as string;
 
-  const handleOpen = () => setOpen(true);
-  const onClose = () => setOpen(false);
+    for (const condition of config.conditions) {
+      try {
+        const {
+          srcKeyFieldCode,
+          dstAppId,
+          dstSpaceId,
+          isDstAppGuestSpace,
+          dstKeyFieldCode,
+          dstQuery,
+          bindings,
+        } = condition;
+        const dynamicQuery = `$id = ${currentRecordId}`;
 
-  return (
-    <>
-      <div className='🐸'>
-        <div className='fixed right-4 bottom-4 cursor-pointer' onClick={handleOpen}>
-          <Alert icon={<Rocket className='h-4 w-4' />} severity='success'>
-            <AlertTitle sx={{ fontWeight: 600 }}>{t('desktop.dialogtrigger.title')}</AlertTitle>
-            {t('desktop.dialogtrigger.content')}
-          </Alert>
-        </div>
-      </div>
-      <Dialog open={open} onClose={onClose}>
-        <DialogContent>
-          <DialogTitle>{PLUGIN_NAME}</DialogTitle>
-          <div>
-            <h3>{t('desktop.dialog.title')}</h3>
-            <div className='max-h-[40vh] overflow-y-auto'>
-              <pre className='font-mono p-4 bg-foreground text-background m-0'>
-                {JSON.stringify(pluginConfig, null, 2)}
-              </pre>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-};
+        const srcQuery = condition.srcQuery
+          ? `${condition.srcQuery} and ${dynamicQuery}`
+          : dynamicQuery;
 
-manager.add(['app.record.index.show', 'app.record.detail.show'], async (event) => {
-  const config = restorePluginConfig();
+        const { records: srcRecords } = await getRecords({
+          app: getAppId()!,
+          query: srcQuery,
+          guestSpaceId: GUEST_SPACE_ID,
+          debug: process.env.NODE_ENV === 'development',
+        });
 
-  if (!cachedRoot || !document.getElementById(ROOT_ID)) {
-    const rootElement = document.createElement('div');
-    rootElement.id = ROOT_ID;
-    document.body.append(rootElement);
+        if (srcRecords.length === 0) {
+          continue;
+        }
+        const srcRecord = srcRecords[0];
+        const srcKeyField = srcRecord[srcKeyFieldCode];
 
-    const root = createRoot(rootElement);
+        const { properties: dstProperties } = await getFormFields({
+          app: dstAppId,
+          guestSpaceId: isDstAppGuestSpace ? (dstSpaceId ?? undefined) : undefined,
+          debug: process.env.NODE_ENV === 'development',
+        });
+        const dstKeyFieldProperty = Object.values(dstProperties).find(
+          (property) => property.code === dstKeyFieldCode
+        );
+        if (!dstKeyFieldProperty) {
+          console.error(
+            `アプリID: ${dstAppId}にフィールドコード: ${dstKeyFieldCode} が存在しないため、他アプリ更新が中断されました`
+          );
+          continue;
+        }
 
-    cachedRoot = root;
+        const dynamicDstQuery = getDynamicDstQuery({ srcKeyField, dstKeyFieldProperty });
+
+        const dstRecords = await getAllRecords({
+          app: dstAppId,
+          guestSpaceId: isDstAppGuestSpace ? (dstSpaceId ?? undefined) : undefined,
+          query: dstQuery ? `${dstQuery} and ${dynamicDstQuery}` : dynamicDstQuery,
+          fields: ['$id', ...bindings.map((binding) => binding.dstFieldCode)],
+          debug: process.env.NODE_ENV === 'development',
+        });
+
+        const dstNewRecords: UpdateAllRecordsParams['records'] = dstRecords.map((record) => {
+          const newRecord: UpdateAllRecordsParams['records'][number] = {
+            id: record.$id.value as string,
+            record: {},
+          };
+          for (const binding of bindings) {
+            const dstProperty = dstProperties[binding.dstFieldCode];
+            if (!dstProperty) {
+              console.warn(
+                `フィールドコード: ${binding.dstFieldCode} が存在しないため、スキップされました`
+              );
+              continue;
+            }
+            const srcField = srcRecord[binding.srcFieldCode];
+            newRecord.record[binding.dstFieldCode] = {
+              value: convertFieldValue({
+                srcField,
+                dstPropertyType: dstProperty.type,
+              }),
+            };
+          }
+          return newRecord;
+        });
+
+        await updateAllRecords({
+          app: dstAppId,
+          guestSpaceId: isDstAppGuestSpace ? (dstSpaceId ?? undefined) : undefined,
+          records: dstNewRecords,
+          debug: process.env.NODE_ENV === 'development',
+        });
+      } catch (error) {
+        console.error(error);
+      }
+    }
+  } finally {
+    loadingOverlay.hide();
   }
-
-  cachedRoot.render(
-    <ThemeProvider>
-      <Component pluginConfig={config} />
-    </ThemeProvider>
-  );
 
   return event;
 });

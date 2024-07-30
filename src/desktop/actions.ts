@@ -1,3 +1,4 @@
+import { t } from '@/lib/i18n';
 import { getFieldValueAsString, kintoneAPI } from '@konomi-app/kintone-utilities';
 
 export const getDynamicDstQuery = (params: {
@@ -125,4 +126,42 @@ export const convertFieldValue = (params: {
     default:
       return null;
   }
+};
+
+export const generateErrorLog = (error: unknown): string => {
+  if (error === null || error === undefined) {
+    return t('desktop.error.unknown');
+  }
+  if (typeof error === 'string') {
+    return `${t('desktop.error.title')}: ${error}`;
+  }
+  if (error instanceof Error) {
+    return `${t('desktop.error.title')}: ${error.message}`;
+  }
+  if (typeof error !== 'object') {
+    return `${t('desktop.error.title')}: ${error}`;
+  }
+
+  if ('results' in error) {
+    let log = '';
+    if (!Array.isArray(error.results)) {
+      return `${t('desktop.error.unknown')}`;
+    }
+    for (const result of error.results) {
+      if (result?.code === 'CB_VA01' && 'errors' in result) {
+        log = `エラーが発生しました: ${result.message ?? '不明なエラー'}`;
+        const entries: [string, any][] = Object.entries(result.errors);
+        for (const [key, v] of entries) {
+          if ('messages' in v && Array.isArray(v.messages)) {
+            log = `\n${key}: ${v.messages.join(', ')}`;
+          }
+        }
+      }
+    }
+    return log;
+  }
+  if ('message' in error) {
+    return `エラーが発生しました: ${error.message ?? '不明なエラー'}`;
+  }
+  return `エラーが発生しました: ${error ?? '不明なエラー'}`;
 };

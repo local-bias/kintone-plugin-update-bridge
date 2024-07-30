@@ -19,13 +19,17 @@ export const getNewCondition = (): Plugin.Condition => ({
   bindings: [getNewBinding()],
   srcQuery: '',
   dstQuery: '',
+  createIfNotExists: false,
 });
 
 /**
  * プラグインの設定情報のひな形を返却します
  */
 export const createConfig = (): Plugin.Config => ({
-  version: 1,
+  version: 2,
+  common: {
+    showResult: false,
+  },
   conditions: [getNewCondition()],
 });
 
@@ -40,11 +44,20 @@ export const migrateConfig = (anyConfig: Plugin.AnyConfig): Plugin.Config => {
   const { version } = anyConfig;
   switch (version) {
     case undefined:
-      return migrateConfig({ ...anyConfig, version: 1 });
     case 1:
+      return migrateConfig({
+        version: 2,
+        common: {
+          showResult: false,
+        },
+        conditions: anyConfig.conditions.map((condition) => ({
+          ...condition,
+          createIfNotExists: false,
+          showResult: false,
+        })),
+      });
+    case 2:
     default:
-      // もし新しいバージョンを追加したらここに追加する
-      // return migrateConfig({ version: 2, ...anyConfig });
       return anyConfig;
   }
 };

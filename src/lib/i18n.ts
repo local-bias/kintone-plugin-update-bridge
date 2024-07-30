@@ -19,6 +19,9 @@ export const ui = {
     'config.condition.keyFieldCode.src.label': 'このアプリのキーフィールド',
     'config.condition.keyFieldCode.dst.label': '更新先アプリのキーフィールド',
 
+    'config.condition.createIfNotExists.label':
+      '更新先アプリに対象となるレコードが存在しない場合、新規作成する',
+
     'config.condition.bindings.title': '紐づけ設定',
     'config.condition.bindings.description':
       'キーが一致したレコードの、更新を行うフィールドを設定します',
@@ -39,6 +42,12 @@ export const ui = {
     'config.condition.dstQuery.label': 'クエリ',
     'config.condition.dstQuery.placeholder': '[フィールド名] = "値"',
 
+    'config.common.showResult.title': '更新結果の表示',
+    'config.common.showResult.description':
+      '紐づけた他アプリの更新結果を表示します。表示するよう設定した場合は、レコード保存時にダイアログが表示され、閉じるボタンを押すまで処理が中断されます。ダイアログを表示しない場合、更新に失敗した場合も画面上には何も表示されません。',
+    'config.common.showResult.label': '更新結果を表示する',
+
+    'config.sidebar.tab.common.label': '共通設定',
     'config.sidebar.tab.label': '設定',
     'config.button.save': '設定を保存',
     'config.button.return': 'プラグイン一覧へ戻る',
@@ -55,6 +64,9 @@ export const ui = {
     'desktop.dialogtrigger.title': 'プラグインが有効です',
     'desktop.dialogtrigger.content': 'クリックするとイベントの詳細を確認できます',
     'desktop.dialog.title': 'プラグインの設定情報',
+    'desktop.error.title': 'エラーが発生しました',
+    'desktop.error.unknown': '不明なエラーが発生しました',
+    'desktop.resultDialog.title': '他アプリの更新結果',
   },
   en: {
     'error.config.root':

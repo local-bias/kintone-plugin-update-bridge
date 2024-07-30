@@ -1,6 +1,9 @@
 import { manager } from '@/lib/event-manager';
 import { restorePluginConfig } from '@/lib/plugin';
 import {
+  addRecord,
+  AddRecordParams,
+  getAllApps,
   getAllRecords,
   getAppId,
   getFormFields,
@@ -9,9 +12,11 @@ import {
   updateAllRecords,
   UpdateAllRecordsParams,
 } from '@konomi-app/kintone-utilities';
-import { convertFieldValue, getDynamicDstQuery } from './actions';
+import { convertFieldValue, generateErrorLog, getDynamicDstQuery } from './actions';
 import { loadingOverlay } from '@/lib/loading';
 import { GUEST_SPACE_ID } from '@/lib/global';
+import Swal from 'sweetalert2';
+import { t } from '@/lib/i18n';
 
 const events: kintoneAPI.js.EventType[] = [
   'app.record.create.submit.success',
@@ -28,7 +33,12 @@ manager.add(events, async (event) => {
     const currentRecord = event.record;
     const currentRecordId = currentRecord.$id.value as string;
 
+    const apps = await getAllApps();
+
+    const logs: string[] = [];
+
     for (const condition of config.conditions) {
+      let log = '';
       try {
         const {
           srcKeyFieldCode,
@@ -39,6 +49,8 @@ manager.add(events, async (event) => {
           dstQuery,
           bindings,
         } = condition;
+        const app = apps.find((app) => app.appId === dstAppId);
+        const appName = app ? app.name : `アプリID ${dstAppId}`;
         const dynamicQuery = `$id = ${currentRecordId}`;
 
         const srcQuery = condition.srcQuery
@@ -53,6 +65,8 @@ manager.add(events, async (event) => {
         });
 
         if (srcRecords.length === 0) {
+          log = `対象レコードが存在しないため、更新をスキップしました`;
+          logs.push(log);
           continue;
         }
         const srcRecord = srcRecords[0];
@@ -67,9 +81,8 @@ manager.add(events, async (event) => {
           (property) => property.code === dstKeyFieldCode
         );
         if (!dstKeyFieldProperty) {
-          console.error(
-            `アプリID: ${dstAppId}にフィールドコード: ${dstKeyFieldCode} が存在しないため、他アプリ更新が中断されました`
-          );
+          log = `${appName}: ${dstAppId}にフィールドコード: ${dstKeyFieldCode} が存在しないため、更新をスキップしました`;
+          logs.push(log);
           continue;
         }
 
@@ -83,39 +96,79 @@ manager.add(events, async (event) => {
           debug: process.env.NODE_ENV === 'development',
         });
 
-        const dstNewRecords: UpdateAllRecordsParams['records'] = dstRecords.map((record) => {
-          const newRecord: UpdateAllRecordsParams['records'][number] = {
-            id: record.$id.value as string,
-            record: {},
-          };
-          for (const binding of bindings) {
-            const dstProperty = dstProperties[binding.dstFieldCode];
-            if (!dstProperty) {
-              console.warn(
-                `フィールドコード: ${binding.dstFieldCode} が存在しないため、スキップされました`
-              );
-              continue;
+        if (dstRecords.length === 0) {
+          if (condition.createIfNotExists) {
+            const newRecord: AddRecordParams['record'] = {};
+            for (const binding of bindings) {
+              const dstProperty = dstProperties[binding.dstFieldCode];
+              if (!dstProperty) {
+                console.warn(
+                  `フィールドコード: ${binding.dstFieldCode} が存在しないため、スキップされました`
+                );
+                continue;
+              }
+              const srcField = srcRecord[binding.srcFieldCode];
+              newRecord[binding.dstFieldCode] = {
+                value: convertFieldValue({
+                  srcField,
+                  dstPropertyType: dstProperty.type,
+                }),
+              };
             }
-            const srcField = srcRecord[binding.srcFieldCode];
-            newRecord.record[binding.dstFieldCode] = {
-              value: convertFieldValue({
-                srcField,
-                dstPropertyType: dstProperty.type,
-              }),
-            };
+            await addRecord({
+              app: dstAppId,
+              guestSpaceId: isDstAppGuestSpace ? (dstSpaceId ?? undefined) : undefined,
+              record: newRecord,
+              debug: process.env.NODE_ENV === 'development',
+            });
+            log = `${appName}: 対象レコードが存在しなかったため、新規作成しました`;
+          } else {
+            log = `${appName}: 対象レコードが存在しないため、データは更新されませんでした`;
           }
-          return newRecord;
-        });
-
-        await updateAllRecords({
-          app: dstAppId,
-          guestSpaceId: isDstAppGuestSpace ? (dstSpaceId ?? undefined) : undefined,
-          records: dstNewRecords,
-          debug: process.env.NODE_ENV === 'development',
-        });
-      } catch (error) {
+        } else {
+          const dstNewRecords: UpdateAllRecordsParams['records'] = dstRecords.map((record) => {
+            const newRecord: UpdateAllRecordsParams['records'][number] = {
+              id: record.$id.value as string,
+              record: {},
+            };
+            for (const binding of bindings) {
+              const dstProperty = dstProperties[binding.dstFieldCode];
+              if (!dstProperty) {
+                console.warn(
+                  `フィールドコード: ${binding.dstFieldCode} が存在しないため、スキップされました`
+                );
+                continue;
+              }
+              const srcField = srcRecord[binding.srcFieldCode];
+              newRecord.record[binding.dstFieldCode] = {
+                value: convertFieldValue({
+                  srcField,
+                  dstPropertyType: dstProperty.type,
+                }),
+              };
+            }
+            return newRecord;
+          });
+          await updateAllRecords({
+            app: dstAppId,
+            guestSpaceId: isDstAppGuestSpace ? (dstSpaceId ?? undefined) : undefined,
+            records: dstNewRecords,
+            debug: process.env.NODE_ENV === 'development',
+          });
+          log = `${appName}: 対象レコード${dstRecords.length}件を更新しました`;
+        }
+      } catch (error: any) {
         console.error(error);
+        log = generateErrorLog(error);
       }
+      logs.push(log);
+    }
+    if (config.common.showResult) {
+      await Swal.fire({
+        title: t('desktop.resultDialog.title'),
+        html: `<div style="font-size:14px;text-align:left;">${logs.join('<br>')}</div>`,
+        icon: 'info',
+      });
     }
   } finally {
     loadingOverlay.hide();

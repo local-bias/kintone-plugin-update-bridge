@@ -103,11 +103,17 @@ manager.add(events, async (event) => {
               const dstProperty = dstProperties[binding.dstFieldCode];
               if (!dstProperty) {
                 console.warn(
-                  `フィールドコード: ${binding.dstFieldCode} が存在しないため、スキップされました`
+                  `更新先アプリのフィールド: ${binding.dstFieldCode} が存在しないため、スキップされました`
                 );
                 continue;
               }
               const srcField = srcRecord[binding.srcFieldCode];
+              if (!srcField) {
+                console.warn(
+                  `このアプリのフィールド: ${binding.srcFieldCode} が存在しないため、スキップされました`
+                );
+                continue;
+              }
               newRecord[binding.dstFieldCode] = {
                 value: convertFieldValue({
                   srcField,
@@ -135,11 +141,17 @@ manager.add(events, async (event) => {
               const dstProperty = dstProperties[binding.dstFieldCode];
               if (!dstProperty) {
                 console.warn(
-                  `フィールドコード: ${binding.dstFieldCode} が存在しないため、スキップされました`
+                  `更新先アプリのフィールド: ${binding.dstFieldCode} が存在しないため、スキップされました`
                 );
                 continue;
               }
               const srcField = srcRecord[binding.srcFieldCode];
+              if (!srcField) {
+                console.warn(
+                  `このアプリのフィールド: ${binding.srcFieldCode} が存在しないため、スキップされました`
+                );
+                continue;
+              }
               newRecord.record[binding.dstFieldCode] = {
                 value: convertFieldValue({
                   srcField,

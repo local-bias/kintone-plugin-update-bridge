@@ -149,13 +149,13 @@ manager.add(events, async (event) => {
             }
             return newRecord;
           });
-          await updateAllRecords({
+          const { records: results } = await updateAllRecords({
             app: dstAppId,
             guestSpaceId: isDstAppGuestSpace ? (dstSpaceId ?? undefined) : undefined,
             records: dstNewRecords,
             debug: process.env.NODE_ENV === 'development',
           });
-          log = `${appName}: 対象レコード${dstRecords.length}件を更新しました`;
+          log = `${appName}: 対象レコード${results.length}件を更新しました`;
         }
       } catch (error: any) {
         console.error(error);
